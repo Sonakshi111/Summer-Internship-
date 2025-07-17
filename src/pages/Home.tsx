@@ -23,6 +23,19 @@ function Home() {
           >
             🔐 Login
           </Link>
+          <Link
+            to="/dashboard"
+            className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded"
+          >
+           Student Dashboard
+          </Link>
+          <Link
+            to="/batch-form"
+            className="block w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded"
+          >
+           Batch Allotment form
+          </Link>
+
         </div>
       </div>
     </div>
