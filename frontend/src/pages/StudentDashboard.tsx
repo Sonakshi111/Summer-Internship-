@@ -1,13 +1,9 @@
-
-
-
 import React from 'react';
 import './StudentDashboard.css';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
 
-
-
-interface StudentData {
+// ✅ TypeScript Interface
+export interface StudentData {
   name: string;
   uniqueId: string;
   dob: string;
@@ -27,17 +23,19 @@ interface StudentData {
   trainingSlot: string;
 }
 
-interface Props {
+// ✅ Accept props
+interface StudentDashboardProps {
   student: StudentData;
 }
 
-const StudentDashboard: React.FC<Props> = ({ student }) => {
+const StudentDashboard: React.FC<StudentDashboardProps> = ({ student }) => {
   const navigate = useNavigate();
+
   const handleLogout = () => {
-    // (Optional) Clear any user data if stored (e.g. localStorage/session)
-    // localStorage.removeItem("user");
-    navigate('/login'); 
+    localStorage.removeItem('uniqueId');
+    navigate('/login');
   };
+
   return (
     <div className='container'>
       {/* Header */}
@@ -47,12 +45,14 @@ const StudentDashboard: React.FC<Props> = ({ student }) => {
 
       {/* Profile Bar */}
       <div className='profileBar'>
-  <div className='profileImageWrapper'>
-    <img src='' alt="Profile" className="profileImage" /></div>
-  <h1 className='studentName'><span style={{ fontSize: '2rem' }}>Hello 👋</span><br />{student.name}</h1>
-  <button className='logoutButton' onClick={handleLogout}>Logout</button>
-</div>
-
+        <div className='profileImageWrapper'>
+          <img src='' alt="Profile" className="profileImage" />
+        </div>
+        <h1 className='studentName'>
+          <span style={{ fontSize: '2rem' }}>Hello 👋</span><br />{student.name}
+        </h1>
+        <button className='logoutButton' onClick={handleLogout}>Logout</button>
+      </div>
 
       {/* Details Section */}
       <div className='cardContainer'>
@@ -85,7 +85,5 @@ const StudentDashboard: React.FC<Props> = ({ student }) => {
     </div>
   );
 };
-
-
 
 export default StudentDashboard;
