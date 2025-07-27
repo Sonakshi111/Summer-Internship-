@@ -6,6 +6,7 @@ import Login from "./pages/Login";      // will add later
 import SelectedList from "./pages/SelectedList"; // will add later
 import Dashboard from "./Dashboard";
 import BatchAllotmentForm from "./pages/BatchAllotmentForm";
+import ChallanPage from "./pages/challanPage";
 
 function App() {
   return (
@@ -16,6 +17,10 @@ function App() {
         <Route path="/selected" element={<SelectedList />} />
          <Route path="/dashboard" element={<Dashboard />} />
          <Route path="/batch-form" element={<BatchAllotmentForm />} />
+          <Route path="/challan" element={<ChallanPage />} />
+          <Route path="/batch-allotment" element={<BatchAllotmentForm />} />
+
+
 
       </Routes>
     </Router>

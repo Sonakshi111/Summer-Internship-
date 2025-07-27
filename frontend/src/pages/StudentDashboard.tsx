@@ -81,7 +81,14 @@ const StudentDashboard: React.FC<StudentDashboardProps> = ({ student }) => {
           <p><strong>Batch Code:</strong> {student.batchCode}</p>
           <p><strong>Training Slot:</strong> {student.trainingSlot}</p>
         </div>
+
       </div>
+            {/* Generate ID Card Button */}
+      <div className="generateButtonWrapper">
+        <button className="generateButton">Generate ID Card</button>
+      </div>
+
+      
     </div>
   );
 };

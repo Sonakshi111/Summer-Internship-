@@ -1,0 +1,204 @@
+.challan-container {
+  background: linear-gradient(to bottom right, #0c1c4c, #274b8b);
+  min-height: 100vh;
+  min-width:99vw;
+  padding: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+/* ... your existing CSS ... */
+
+/* Checkbox Container Styling */
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #2c3e75;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+/* Disabled Generate Button */
+.generate-button:disabled {
+  background-color: #a5b4fc;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+
+/* Top Bar Full Width */
+.top-bar {
+  width: 100%;
+  background-color: #1e2d59;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.bar-left,
+.bar-right {
+  display: flex;
+  align-items: center;
+}
+
+.action-button {
+  background-color: #dc2626;
+  color: #fff;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.9rem 1.7rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s;
+  margin-left:30px ;
+  margin-right: 30px;
+}
+
+.action-button:hover {
+  background-color: #b91c1c;
+}
+
+/* Instruction Box */
+.instruction-box {
+  background-color: #f3f4f6;
+  color: #1a202c;
+  padding: 2.5rem;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 1000px;
+  margin-top: 2rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.instruction-title {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  color: #0f172a;
+}
+
+.instruction-list {
+  list-style-type: decimal;
+  padding-left: 1.8rem;
+  line-height: 1.8;
+  font-size: 1.2rem;
+}
+
+.highlight {
+  color: #dc2626;
+  font-weight: 600;
+}
+
+.email-link {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 2.5rem;
+}
+
+.generate-button {
+  background-color: #16a34a;
+  color: white;
+  font-size: 1.1rem;
+  padding: 0.9rem 2.5rem;
+  border: none;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.3s ease-in-out;
+}
+
+.generate-button:hover {
+  background-color: #15803d;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .top-bar {
+    flex-direction: column;
+    gap: 0.8rem;
+    padding: 1rem;
+  }
+
+  .action-button {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
+  }
+
+  .instruction-box {
+    padding: 2rem;
+  }
+
+  .instruction-title {
+    font-size: 1.5rem;
+  }
+
+  .instruction-list {
+    font-size: 0.95rem;
+  }
+
+  .generate-button {
+    font-size: 1rem;
+    padding: 0.8rem 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .instruction-title {
+    font-size: 1.3rem;
+  }
+
+  .instruction-list {
+    font-size: 0.9rem;
+    padding-left: 1.3rem;
+  }
+
+  .generate-button {
+    font-size: 0.95rem;
+    padding: 0.7rem 1.8rem;
+  }
+
+  .action-button {
+    font-size: 0.85rem;
+    padding: 0.5rem 1rem;
+  }
+} 
+/* Batch Allotment Link Styling */
+.link-container {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.batch-link {
+  color: #1a202c; /* Dark color */
+  font-weight: 600;
+  font-size: 1.1rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.batch-link:hover {
+  color: #111827; /* Even darker on hover */
+  text-decoration-thickness: 2px;
+}
+
+.disabled-link {
+  pointer-events: none;
+  color: #9ca3af;
+  text-decoration: none;
+  cursor: not-allowed;
+}
