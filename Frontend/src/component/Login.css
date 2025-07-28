@@ -1,0 +1,119 @@
+/* Login.css */
+
+/* General Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1a2a6c, #2c3e50);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  color: #e0e7ff;
+}
+
+/* Login Container */
+.login-container {
+  max-width: 400px;
+  width: 100%;
+  padding: 20px;
+  background: linear-gradient(145deg, #16222a, #1a2a40);
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #aac8ff;
+  font-weight: 700;
+  font-style: italic;
+}
+
+/* Form Elements */
+label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #94c5ff;
+}
+
+input[type="text"],
+input[type="password"] {
+  width: 100%;
+  padding: 12px 16px;
+  margin-bottom: 15px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(30, 58, 95, 0.6);
+  color: #e0e7ff;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+  outline: none;
+  border: 1px solid #3a7bd5;
+  box-shadow: 0 0 0 3px rgba(58, 123, 213, 0.3);
+  background: rgba(30, 58, 95, 0.8);
+}
+
+input[type="radio"] {
+  margin-right: 5px;
+}
+
+.login-type {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+}
+
+button {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(to right, #3a7bd5, #00d2ff);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+button:hover {
+  background: linear-gradient(to right, #2f67b9, #00bef2);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive Styles */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 15px;
+  }
+
+  h2 {
+    font-size: 1.5rem;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    padding: 10px;
+  }
+
+  button {
+    padding: 10px;
+  }
+}
