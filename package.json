@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@types/tmp": "^0.2.6",
+    "tmp": "^0.2.3"
+  }
+}
