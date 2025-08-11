@@ -54,8 +54,8 @@ export default function Login({ students = [] }) {  // default to empty array
             }
             const studentData = await studentResponse.json();
             
-            // Navigate to BatchAllotmentForm with student data
-            navigate('/batch-allotment', {
+            // Navigate to challanPage.tsx with student data
+            navigate('/challan-page', {
               state: {
                 student: studentData.data[0] || {}
               }

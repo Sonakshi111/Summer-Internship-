@@ -1,41 +1,49 @@
-import { getStudentInfoRows } from '../Models/sheetsModel.js';
+import { getStudentInfoRows, sheets, sheetId, mapRowsToObjects } from '../Models/sheetsModel.js';
 
 export async function getStudentInfo(req, res) {
   try {
     const { uid } = req.params;
+    console.log(`Received request to /api/student/info/${uid}`);
     
-    // Get all rows from Sheet2
-    const allRows = await getStudentInfoRows();
+    // Get all rows from RegistrationDetails including headers
+    const sheetRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range: 'RegistrationDetails!A1:E'
+    });
+                    
+    const [headers, ...rows] = sheetRes.data.values;
+    console.log('Headers in RegistrationDetails:', headers);
+    console.log('Raw data rows:', rows);
+    
+    const allRows = mapRowsToObjects(rows, headers);
+    console.log('Processed rows:', allRows);
     
     // Find the row matching the student's UID
-    const studentInfo = allRows.find(row => row.uniqueId === uid);
+    const studentInfo = allRows.find(row => row.UID === uid);
+    console.log('Found student info:', studentInfo);
     
     if (!studentInfo) {
+      console.log(`Student with UID ${uid} not found`);
       return res.status(404).json({ success: false, message: 'Student not found' });
     }
     
-    // Return only the relevant fields needed for StudentDashboard
-    const { uniqueId, name, email, dob, phone, college, course, branch, address } = studentInfo;
+    // Return only the available fields from RegistrationDetails
+    const { UID, name, email, course } = studentInfo;
     
     res.json({
       success: true,
       studentInfo: {
-        uniqueId,
+        UID,
         name,
         email,
-        dob,
-        phone,
-        college,
-        course,
-        branch,
-        address
+        course
       }
     });
   } catch (error) {
     console.error('Error fetching student info:', error);
-    res.status(500).json({ 
+    return res.status(500).json({ 
       success: false, 
-      message: 'Failed to fetch student information',
+      message: error.message || 'Failed to fetch student information',
       error: error.message 
     });
   }
