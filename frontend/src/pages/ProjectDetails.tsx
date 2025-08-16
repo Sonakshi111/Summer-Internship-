@@ -158,26 +158,25 @@
 
 
 import React, { useState } from "react";
-import axios from "axios";
 import "./ProjectDetails.css";
 
-interface ProjectForm {
-  name: string;
-  code: string;
+interface Project {
+  projectName: string;
+  projectCode: string;
   duration: string;
   branch: string;
   batch: string;
-  slots: string[];
+  timeSlots: string[];
 }
 
 const ProjectDetails: React.FC = () => {
-  const [projects, setProjects] = useState<ProjectForm[]>([
-    { name: "", code: "", duration: "", branch: "", batch: "", slots: [""] },
+  const [projects, setProjects] = useState<Project[]>([
+    { projectName: "", projectCode: "", duration: "", branch: "", batch: "", timeSlots: [""] },
   ]);
 
   const handleChange = (
     index: number,
-    field: keyof Omit<ProjectForm, "slots">,
+    field: keyof Omit<Project, "timeSlots">,
     value: string
   ) => {
     const updatedProjects = [...projects];
@@ -191,39 +190,46 @@ const ProjectDetails: React.FC = () => {
     value: string
   ) => {
     const updatedProjects = [...projects];
-    updatedProjects[projectIndex].slots[slotIndex] = value;
+    updatedProjects[projectIndex].timeSlots[slotIndex] = value;
     setProjects(updatedProjects);
   };
 
   const addTimeSlot = (projectIndex: number) => {
     const updatedProjects = [...projects];
-    updatedProjects[projectIndex].slots.push("");
+    updatedProjects[projectIndex].timeSlots.push("");
     setProjects(updatedProjects);
   };
 
   const addProject = () => {
     setProjects([
       ...projects,
-      { name: "", code: "", duration: "", branch: "", batch: "", slots: [""] },
+      { projectName: "", projectCode: "", duration: "", branch: "", batch: "", timeSlots: [""] },
     ]);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  try {
-    await axios.post("http://localhost:8080/api/projects", null, {
-      params: {
-        projects: JSON.stringify(projects),
-      },
-    });
-    alert("✅ Projects added successfully!");
-    setProjects([{ name: "", code: "", duration: "", branch: "", batch: "", slots: [""] }]);
-  } catch (err) {
-    console.error(err);
-    alert("❌ Failed to add projects");
-  }
-};
+    e.preventDefault();
+    try {
+      const res = await fetch("http://localhost:8080/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(projects),
+      });
 
+      const data = await res.json();
+      if (res.ok && data.success) {
+        alert("Projects submitted successfully!");
+        setProjects([
+          { projectName: "", projectCode: "", duration: "", branch: "", batch: "", timeSlots: [""] },
+        ]);
+      } else {
+        alert(data.message || "Submission failed!");
+      }
+    } catch (error) {
+      console.error("Error submitting:", error);
+      alert("Submission failed!");
+    }
+  };
 
   return (
     <div className="form-container">
@@ -234,16 +240,16 @@ const ProjectDetails: React.FC = () => {
             <input
               type="text"
               placeholder="Project Name"
-              value={project.name}
-              onChange={(e) => handleChange(index, "name", e.target.value)}
+              value={project.projectName}
+              onChange={(e) => handleChange(index, "projectName", e.target.value)}
               required
             />
 
             <input
               type="text"
               placeholder="Project Code"
-              value={project.code}
-              onChange={(e) => handleChange(index, "code", e.target.value)}
+              value={project.projectCode}
+              onChange={(e) => handleChange(index, "projectCode", e.target.value)}
               required
             />
 
@@ -274,7 +280,7 @@ const ProjectDetails: React.FC = () => {
               required
             />
 
-            {project.slots.map((slot, slotIndex) => (
+            {project.timeSlots.map((slot, slotIndex) => (
               <input
                 key={slotIndex}
                 type="text"
