@@ -130,7 +130,7 @@ const SummerInternshipPortal = ({ onStudentAdd }) => {
       console.log("📥 Response from server:", result);
 
       if (response.ok) {
-        alert(`✅ Registered successfully as ${formData.loginType}`);
+        alert('✅ Registered successfully ! You can login now');
         onStudentAdd(formData);
         setFormData({
           name: "",

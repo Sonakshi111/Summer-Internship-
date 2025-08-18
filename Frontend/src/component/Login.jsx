@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useContext } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './Login.css';
 import { API_BASE_URL, API_ENDPOINTS } from '../api/config';
+import { useAuth } from '../context/AuthContext';
 
 export default function Login({ students = [] }) {  // default to empty array
   const [credentials, setCredentials] = useState({
@@ -12,6 +13,9 @@ export default function Login({ students = [] }) {  // default to empty array
 
   const [error, setError] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  const from = location.state?.from?.pathname || '/admin';  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -42,9 +46,11 @@ export default function Login({ students = [] }) {  // default to empty array
       const data = await response.json();
 
       if (response.ok) {
-        // Redirect to appropriate dashboard based on login type
+        // Handle admin login
         if (data.loginType === 'admin') {
-          navigate('/admin-dashboard');
+          const userData = { ...data, isAdmin: true };
+          login(userData);
+          navigate(from, { replace: true });
         } else {
           try {
             // Fetch complete student data

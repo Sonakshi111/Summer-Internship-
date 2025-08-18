@@ -6,8 +6,7 @@ export const registerValidation = (req, res, next) => {
         name: Joi.string().min(3).max(100).required(),
         phoneNumber: Joi.string().length(10).required(),
         email: Joi.string().email().required(),
-        password: Joi.string().min(4).max(100).required(),
-        loginType: Joi.string().valid('student', 'admin').required()
+        password: Joi.string().min(4).max(100).required()
     });
     const { error, value } = schema.validate(req.body);
     if (error) {
@@ -20,7 +19,7 @@ export const loginValidation = (req, res, next) => {
     const schema = Joi.object({
         uid: Joi.string().required(),
         password: Joi.string().min(4).max(100).required(),
-        loginType: Joi.string().valid('student', 'admin').required()
+        loginType: Joi.string().valid('student', 'admin').default('student')
     });
     const { error, value } = schema.validate(req.body);
     if (error) {

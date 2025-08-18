@@ -1,0 +1,117 @@
+body {
+  font-family: 'Times New Roman', serif;
+  background: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 900px;
+  margin: auto;
+  background: white;
+  padding: 20px;
+  color: black;
+}
+
+h2 {
+  text-align: center;
+}
+
+form label {
+  font-weight: bold;
+  display: block;
+  margin-top: 10px;
+}
+
+input {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  margin-top: 3px;
+}
+
+.btns {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+button {
+  background: #007bff;
+  color: white;
+  padding: 8px 15px;
+  border: none;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #0056b3;
+}
+
+.certificate {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 20mm;
+  box-sizing: border-box;
+  border: 5px solid black;
+  background: white;
+  margin-top: 20px;
+}
+
+.cert-header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.logo {
+  width: 90px;
+  position: absolute;
+  left: 0;
+}
+
+.crest {
+  width: 70px;
+  position: absolute;
+  right: 0;
+}
+
+.header-text {
+  text-align: center;
+  flex-grow: 1;
+  margin: 0 100px;
+}
+
+.cert-title {
+  text-align: center;
+  text-decoration: underline;
+  font-size: 20pt;
+  font-weight: bold;
+  margin-top: 15px;
+  color: black;
+}
+
+.cert-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12pt;
+  margin-top: 15px;
+}
+
+.cert-body {
+  font-size: 14pt;
+  line-height: 1.5;
+  text-align: justify;
+  margin-top: 15px;
+}
+
+.cert-sign {
+  display: flex;
+  justify-content: space-between;
+  font-weight: bold;
+  font-size: 14pt;
+  margin-top: 50px;
+}

@@ -7,6 +7,7 @@ import sheetsRoutes from './Routes/sheetsRoutes.js';
 import batchAllotmentRoutes from './Routes/batchAllotmentRoutes.js';
 import studentInfoRoutes from './Routes/studentInfoRoutes.js';
 import challanRoutes from './Routes/challanRoutes.js';
+import projectRoutes from './Routes/projectRoutes.js';
 
 const app = express();
 dotenv.config();
@@ -25,6 +26,7 @@ app.use('/api', sheetsRoutes);
 app.use('/api/batch', batchAllotmentRoutes);
 app.use('/api/student', studentInfoRoutes);
 app.use('/api/challan', challanRoutes);
+app.use('/api', projectRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);

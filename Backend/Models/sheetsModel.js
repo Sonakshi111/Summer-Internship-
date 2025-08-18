@@ -10,6 +10,42 @@ const auth = new GoogleAuth({
 export const sheets = google.sheets({ version: 'v4', auth });
 const sheetId = process.env.GOOGLE_SHEET_ID;
 export { sheetId, mapRowsToObjects };
+
+// ✅ Project Data operations
+export async function addBatchAllotmentToSheet(projectData) {
+  try {
+    console.log('Adding project data:', projectData);
+    
+    const response = await sheets.spreadsheets.values.append({
+      spreadsheetId: sheetId,
+      range: 'ProjectData!A1:Z',
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [
+          [
+            projectData.projectName || '',
+            projectData.projectCode || '',
+            projectData.duration || '',
+            projectData.branch || '',
+            projectData.batch || '',
+            projectData.timeSlot1 || '',
+            projectData.timeSlot2 || '',
+            projectData.timeSlot3 || '',
+            projectData.timeSlot4 || ''
+          ]
+        ]
+      }
+    });
+    
+    console.log('Batch allotment added successfully:', response.data);
+    return { success: true, data: response.data };
+    
+  } catch (error) {
+    console.error('Error in addBatchAllotmentToSheet:', error);
+    throw error;
+  }
+}
+
 /* helpers */
 export async function getStudentList() {
   const r = await sheets.spreadsheets.values.get({
@@ -28,8 +64,6 @@ export async function appendUserRow(row) {
   });
 }
 
-// const SHEET_ID = '1w376GT7oxLbgvs9UI2pxqG3ke6OMCuAYcvMp2wcQaWE'; // 🔁 Replace with your actual Sheet ID
-// const RANGE = 'Sheet1!A1:Z1000'; 
 
 export async function getRegistrationRows() {
   const res = await sheets.spreadsheets.values.get({
@@ -169,122 +203,123 @@ export async function getStudentData(uid) {
 }
 
 // ✅ Fee challan sheet operations
-export async function appendChallanRequest({ UID, email, course, requestDate }) {
+export async function appendChallanRequest({ UID, name, email, course, requestDate }) {
   try {
-    // First get the student's name from RegistrationDetails sheet
-    const studentData = await getStudentData(UID);
-    if (!studentData) {
-      throw new Error(`Student with UID ${UID} not found`);
-    }
-    const name = studentData.name;
-    console.log('Using student name:', name);
-
-    // Check if request already exists
-    const existingRequests = await getChallanRequests();
-    const existingRequest = existingRequests.find(req => req.UID === UID);
+    console.log('Appending new challan request for UID:', UID);
     
-    if (existingRequest) {
-      // Allow resubmission if previous request was rejected
-      if (existingRequest.status === 'rejected') {
-        // Delete the rejected request first
-        const rows = await sheets.spreadsheets.values.get({
+    // Column order for Fee Challan sheet:
+    // 0: Name, 1: UID, 2: Email, 3: Course, 4: Request Date, 5: Status, 6: Verified Date, 7: Signature URL
+    const rowData = [
+      name,        // Name
+      UID,         // UID
+      email,       // Email
+      course,      // Course
+      requestDate, // Request Date
+      'pending',   // Status (initially pending)
+      '',          // Verified Date (empty initially)
+      ''           // Signature URL (empty initially)
+    ];
+
+    // Check for existing request
+    const challanRes = await sheets.spreadsheets.values.get({
+      spreadsheetId: sheetId,
+      range: 'Fee Challan!A2:H' // Skip header row
+    });
+    
+    const challanRows = challanRes.data.values || [];
+    const existingRowIndex = challanRows.findIndex(row => row[1] && row[1].trim() === UID.trim());
+    
+    if (existingRowIndex !== -1) {
+      // Update existing request if it was rejected
+      const existingStatus = (challanRows[existingRowIndex][5] || '').toLowerCase();
+      if (existingStatus === 'rejected') {
+        await sheets.spreadsheets.values.update({
           spreadsheetId: sheetId,
-          range: 'Fee challan!A1:H'
+          range: `Fee Challan!A${existingRowIndex + 2}:H${existingRowIndex + 2}`, // +2 because 1 for header, 1 for 0-based index
+          valueInputOption: 'USER_ENTERED',
+          resource: {
+            values: [rowData]
+          }
         });
-        const rowToDelete = rows.data.values?.findIndex(row => row[1] === UID); // Assuming UID is in column B
-        if (rowToDelete !== -1) {
-          await sheets.spreadsheets.values.batchClear({
-            spreadsheetId: sheetId,
-            ranges: [`Fee challan!A${rowToDelete + 1}:H${rowToDelete + 1}`]
-          });
-        }
-      } else {
-        throw new Error(`Challan request already exists for UID ${UID}. Current status: ${existingRequest.status}.\nPlease wait for the current request to be processed or contact support if you need assistance.`);
+        return { success: true, message: 'Challan request resubmitted successfully' };
       }
+      return { success: false, message: 'A challan request already exists for this student' };
     }
 
-    // Get the actual headers from the Fee challan sheet
-    const headersRes = await sheets.spreadsheets.values.get({
+    // If no existing request, append a new row
+    await sheets.spreadsheets.values.append({
       spreadsheetId: sheetId,
-      range: 'Fee challan!A1:H1',
-    });
-
-    const headers = headersRes.data.values?.[0];
-    console.log('Actual sheet headers:', headers);
-    
-    if (!headers) {
-      throw new Error('No headers found in Fee challan sheet');
-    }
-
-    // Create the row in the correct order based on actual headers
-    const row = headers.map(header => {
-      switch (header) {
-        case 'Name': return name;
-        case 'UID': return UID;
-        case 'Email': return email; // Use email from POST request
-        case 'Course': return ''; // Course is empty since it's not in RegistrationDetails
-        case 'Request Date': return requestDate;
-        case 'Status': return 'pending';
-        case 'Verified Date': return '';
-        case 'Signature URL': return '';
-        default: return '';
-      }
-    });
-
-    console.log('Appending row:', row);
-    return sheets.spreadsheets.values.append({
-      spreadsheetId: sheetId,
-      range: 'Fee challan!A1:H',
+      range: 'Fee Challan!A1:H1',
       valueInputOption: 'USER_ENTERED',
-      requestBody: {
-        values: [row]
+      resource: {
+        values: [rowData]
       }
     });
+
+    return { success: true, message: 'Challan request submitted successfully' };
+    
   } catch (error) {
-    console.error('Error appending challan request:', error);
+    console.error('Error in appendChallanRequest:', error);
     throw error;
   }
 }
 
 export async function getChallanRequests() {
   try {
+    console.log('Fetching challan requests from sheet...');
+    console.log('Sheet ID:', sheetId);
+    
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: sheetId,
-      range: 'Fee challan!A1:Z',
+      range: 'Fee Challan!A2:H', // Skip header row
     });
 
-    if (!res.data.values) {
-      console.error('No data returned from spreadsheet');
+    if (!res.data || !res.data.values) {
+      console.error('No data returned from spreadsheet. Response:', JSON.stringify(res.data, null, 2));
       return [];
     }
 
-    const [headers, ...rows] = res.data.values;
+    const rows = res.data.values;
+    console.log(`Retrieved ${rows.length} rows from Fee Challan sheet`);
     
-    if (!headers || headers.length === 0) {
-      console.error('No headers found in spreadsheet');
-      return [];
+    if (rows.length > 0) {
+      console.log('First row sample:', rows[0]);
     }
-
-    console.log('Detected headers:', headers);
     
-    const mappedData = mapRowsToObjects(rows, headers);
-    console.log('Transformed data:', mappedData);
+    // Map rows to objects using direct indices
+    // 0: Name, 1: UID, 2: Email, 3: Course, 4: Request Date, 5: Status, 6: Verified Date, 7: Signature URL
+    const mappedRows = rows.map((row, index) => ({
+      name: row[0] || '',
+      UID: row[1]?.toString() || '', // Ensure UID is a string for comparison
+      email: row[2] || '',
+      course: row[3] || '',
+      requestDate: row[4] || '',
+      status: (row[5] || '').toLowerCase(),
+      verifiedDate: row[6] || '',
+      signatureUrl: row[7] || '',
+      _rowIndex: index + 2 // +2 because we're skipping header and JS is 0-based
+    }));
     
-    return mappedData;
+    console.log(`Mapped ${mappedRows.length} challan requests`);
+    return mappedRows;
   } catch (error) {
-    console.error('Error fetching challan requests:', error);
-    throw error;
+    console.error('Error in getChallanRequests:', {
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.data
+    });
+    throw new Error(`Failed to fetch challan requests: ${error.message}`);
   }
 }
 
 // Define aliases for each field that we can match against
 const fieldAliases = {
-  name: ['name'],
-  UID: ['uid', 'student_id', 'id'],
-  phone: ['phone', 'mobile', 'contact'],
-  email: ['email'],
+  name: ['name', 'full name', 'student name', 'student_name'],
+  UID: ['uid', 'student_id', 'id', 'student id', 'studentid', 'registration number', 'regno'],
+  email: ['email', 'email address', 'email_address'],
+  course: ['course', 'program', 'degree', 'branch'],
+  phone: ['phone', 'phone number', 'phone_number', 'mobile', 'mobile number', 'contact'],
   password: ['password', 'hash'],
-  course: ['course', 'program'],
   status: ['status', 'state'],
   requestDate: ['request_date', 'date_requested']
 };
@@ -307,7 +342,8 @@ function findMatchingHeader(header) {
 
 function mapRowsToObjects(rows, headers) {
   // Log headers for debugging
-  console.log('Headers in sheet:', headers);
+  console.log('=== Sheet Headers ===');
+  headers.forEach((h, i) => console.log(`[${i}] ${h}`));
   
   // Create a mapping of header names to their indices
   const headerMap = headers.reduce((acc, header, index) => {
@@ -315,15 +351,21 @@ function mapRowsToObjects(rows, headers) {
     return acc;
   }, {});
 
+  console.log('=== Header Field Mapping ===');
   // Create a mapping of actual headers to our field names
   const headerFieldMap = headers.reduce((acc, header) => {
+    const originalHeader = header;
+    header = header.trim();
     const field = findMatchingHeader(header);
-    console.log(`Mapping header '${header}' to field:`, field);
+    console.log(`'${originalHeader}' -> '${field}'`);
     if (field) {
-      acc[header] = field;
+      acc[originalHeader] = field;
     }
     return acc;
   }, {});
+  
+  console.log('=== Mapped Fields ===');
+  console.log(JSON.stringify(headerFieldMap, null, 2));
 
   return rows.map(row => {
     const obj = {};

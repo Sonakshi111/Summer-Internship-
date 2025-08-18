@@ -3,18 +3,18 @@ import { sheets } from '../Models/sheetsModel.js';
 
 export const login = async (req, res) => {
   try {
-    const { uid, password, loginType } = req.body;
-    console.log('Login request received:', uid);
+    const { uid, password, loginType = 'student' } = req.body;
+    console.log('Login request received:', { uid, loginType });
     console.log('Request body:', req.body);
-    console.log('Login type:', loginType);
 
-    if (!loginType || !['student', 'admin'].includes(loginType)) {
+    if (!['student', 'admin'].includes(loginType)) {
       return res.status(400).json({ message: 'Invalid login type', success: false });
     }
 
     const sheetId = process.env.GOOGLE_SHEET_ID;
     console.log('Using sheet ID:', sheetId);
     
+    // Determine which sheet to check based on login type
     const range = loginType === 'admin' ? 'AdminDetails!A2:E' : 'RegistrationDetails!A2:E';
     console.log('Fetching from:', range);
 
@@ -32,7 +32,10 @@ export const login = async (req, res) => {
     console.log('User found:', userRow);
 
     if (!userRow) {
-      return res.status(401).json({ message: 'Invalid UID', success: false });
+      return res.status(401).json({ 
+        message: `Invalid ${loginType === 'admin' ? 'admin' : 'student'} UID`, 
+        success: false 
+      });
     }
 
     const storedHashedPassword = userRow[4];

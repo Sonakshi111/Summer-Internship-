@@ -12,27 +12,22 @@ const sheets = google.sheets({ version: 'v4', auth });
 /* 2️⃣  Main handler */
 export const register = async (req, res) => {
   try {
-    const { name, uid, phoneNumber, email, password, loginType } = req.body;
+    const { name, uid, phoneNumber, email, password } = req.body;
     console.log("Received req.body:", req.body);
     console.log('Name:', name);
     console.log('UID:', uid);
     console.log('Phone:', phoneNumber);
     console.log('Email:', email);
     console.log('Password:', password);
-    console.log('Login Type:', loginType);
 
-    if (!name || !uid || !phoneNumber || !email || !password || !loginType) {
+    if (!name || !uid || !phoneNumber || !email || !password) {
       throw new Error('❌ Missing required fields');
-    }
-
-    if (!['student', 'admin'].includes(loginType)) {
-      throw new Error('❌ Invalid login type');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const userRow = [name, uid, phoneNumber, email, hashedPassword];
 
-    const sheetName = loginType === 'admin' ? 'AdminDetails' : 'RegistrationDetails';
+    const sheetName = 'RegistrationDetails';
 
     const result = await sheets.spreadsheets.values.append({
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
@@ -41,18 +36,18 @@ export const register = async (req, res) => {
       requestBody: { values: [userRow] },
     });
 
-    console.log(`✅ Google Sheets (${loginType}) append result:`, result.status);
+    console.log('✅ Google Sheets append result:', result.status);
 
-
+    const successMessage = 'Registration successful';
     console.log('✅ Sending response:', {
-      message: `${loginType.charAt(0).toUpperCase() + loginType.slice(1)} registered successfully`,
+      message: successMessage,
       success: true,
       uid,
       name,
     });
     
     res.status(201).json({
-      message: `${loginType.charAt(0).toUpperCase() + loginType.slice(1)} registered successfully`,
+      message: successMessage,
       success: true,
       uid,
       name,

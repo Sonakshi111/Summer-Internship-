@@ -6,7 +6,7 @@ const ChallanPage: React.FC = () => {
   const [isChecked, setIsChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [buttonState, setButtonState] = useState<'initial' | 'verified' | 'pending'>('initial');
+  const [buttonState, setButtonState] = useState<'initial' | 'pending' | 'verified' | 'error'>('initial');
 
   const handleCheckboxChange = () => {
     setIsChecked(!isChecked);
@@ -29,13 +29,38 @@ const ChallanPage: React.FC = () => {
       }
 
       // Check if challan request already exists
-      const statusResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/challan/status?UID=${UID}`);
+      const encodedUID = encodeURIComponent(UID);
+      const statusUrl = `${import.meta.env.VITE_API_BASE_URL}/api/challan/status/${encodedUID}`;
+      console.log('Making request to:', statusUrl);
+      
+      const statusResponse = await fetch(statusUrl);
+      console.log('Status response status:', statusResponse.status);
+      
+      // Log response headers
+      console.log('Response headers:');
+      statusResponse.headers.forEach((value, key) => {
+        console.log(`${key}: ${value}`);
+      });
+      
+      // Get response as text first for debugging
+      const responseText = await statusResponse.text();
+      console.log('Raw response:', responseText);
+      
       if (!statusResponse.ok) {
-        const errorData = await statusResponse.json();
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+        } catch (e) {
+          console.error('Failed to parse error response as JSON:', e);
+          throw new Error(`Server returned status ${statusResponse.status}: ${responseText}`);
+        }
         throw new Error(errorData.error || 'Failed to check challan status');
       }
-      const statusData = await statusResponse.json();
-      const { status } = statusData;
+      
+      // Parse the successful response
+      const statusData = JSON.parse(responseText);
+      console.log('Parsed status data:', statusData);
+      const status = statusData.exists ? statusData.challanRequest?.status : null;
 
       if (status === "pending") {
         setButtonState('pending');
@@ -44,31 +69,37 @@ const ChallanPage: React.FC = () => {
       }
 
       // Fetch student details from backend using student info endpoint
-      const studentResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/student/info/${UID}`) as Response;
+      const studentResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/student/info/${encodedUID}`) as Response;
       const studentData = await studentResponse.json();
 
       if (!studentResponse.ok) {
-        throw new Error(`Failed to fetch student data: ${studentData.error || 'Unknown error'}`);
+        throw new Error(`Failed to fetch student data: ${studentData.message || 'Unknown error'}`);
       }
 
-      if (!studentData || !studentData.success) {
+      if (!studentData || !studentData.success || !studentData.studentInfo) {
         setMessage("❌ Student not found. Please check your ID and try again.");
         setIsLoading(false);
         return;
       }
 
       // Submit challan request with student details
-      const requestResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/challan/generate-challan`, {
+      const submitUrl = `${import.meta.env.VITE_API_BASE_URL}/api/challan/submit`;
+      const requestBody = {
+        name: studentData.studentInfo.name,
+        UID: studentData.studentInfo.UID,
+        email: studentData.studentInfo.email,
+        course: studentData.studentInfo.course
+      };
+      
+      console.log('Submitting challan request to:', submitUrl);
+      console.log('Request body:', requestBody);
+      
+      const requestResponse = await fetch(submitUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: studentData.name,
-          UID,
-          email: studentData.email,
-          course: studentData.course
-        })
+        body: JSON.stringify(requestBody)
       });
 
       if (!requestResponse.ok) {
@@ -78,17 +109,17 @@ const ChallanPage: React.FC = () => {
 
       if (requestResponse.status === 200) {
         // Check status again after submission
-        const statusResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/challan/status?UID=${UID}`);
+        const statusResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/challan/status/${encodedUID}`);
         if (!statusResponse.ok) {
           const errorData = await statusResponse.json();
           throw new Error(errorData.error || 'Failed to check challan status');
         }
         const statusData = await statusResponse.json();
-        const { status } = statusData;
+        const status = statusData.exists ? statusData.challanRequest?.status : null;
 
         if (status === "verified") {
           // Generate and download challan
-          const downloadResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/challan/download/${UID}`) as Response;
+          const downloadResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/challan/download/${encodedUID}`) as Response;
           if (!downloadResponse.ok) {
             const errorData = await downloadResponse.json();
             throw new Error(errorData.error || 'Failed to download challan');
@@ -112,12 +143,22 @@ const ChallanPage: React.FC = () => {
         setMessage("⚠️ Something went wrong. Please try again.");
       }
     } catch (error) {
-      let errorMessage = "❌ Failed to process challan. Please check your connection and try again.";
-      if (error instanceof Error) {
-        errorMessage = `❌ ${error.message}`;
+      console.error('Challan processing error:', error);
+      let errorMessage = error.message;
+      
+      // Try to extract more detailed error message from response if available
+      if (error.response) {
+        try {
+          const errorData = await error.response.json();
+          errorMessage = errorData.error || errorData.message || errorMessage;
+        } catch (e) {
+          // If we can't parse the error response, use the status text
+          errorMessage = error.response.statusText || errorMessage;
+        }
       }
-      setMessage(errorMessage);
-      console.error("Challan processing error:", error);
+      
+      setMessage(`❌ Error: ${errorMessage}`);
+      setButtonState('error');
     } finally {
       setIsLoading(false);
     }

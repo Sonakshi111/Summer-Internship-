@@ -9,11 +9,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export async function generateChallanPDF(studentData) {
   try {
+    console.log('Starting PDF generation with student data:', studentData);
+    
     // Handle both string and object input
     let name = 'N/A';
+    let UID = '';
+    
     // Set current date in DD-MM-YYYY format
     const currentDate = new Date();
-    let verifiedDate = `${currentDate.getDate().toString().padStart(2, '0')}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getFullYear()}`;
+    let verifiedDate = studentData?.verifiedDate || 
+      `${currentDate.getDate().toString().padStart(2, '0')}-${(currentDate.getMonth() + 1).toString().padStart(2, '0')}-${currentDate.getFullYear()}`;
+    
     let verifiedDateCapital = verifiedDate.toUpperCase();
 
     // If studentData is a string, use it as the name
@@ -21,11 +27,19 @@ export async function generateChallanPDF(studentData) {
       name = studentData;
     } else if (typeof studentData === 'object') {
       name = studentData?.name || 'N/A';
+      UID = studentData?.UID || '';
+      
+      // If we have a verifiedDate in the data, use it
+      if (studentData.verifiedDate) {
+        verifiedDate = studentData.verifiedDate;
+        verifiedDateCapital = verifiedDate.toUpperCase();
+      }
     }
 
     // Log the processed data
-    console.log('Processed student data:', {
+    console.log('Processed student data for PDF:', {
       name,
+      UID,
       verifiedDate,
       verifiedDateCapital
     });
@@ -33,8 +47,11 @@ export async function generateChallanPDF(studentData) {
     // Load the Word template from Frontend/public directory
     const templatePath = path.join(__dirname, '..', '..', 'Frontend', 'public', 'Fee Challan.docx');
     console.log('Looking for template at:', templatePath);
+    
     if (!fs.existsSync(templatePath)) {
-      throw new Error(`Template file not found at ${templatePath}`);
+      const errorMsg = `Template file not found at ${templatePath}. Current working directory: ${process.cwd()}`;
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
     // Convert Word to HTML using mammoth

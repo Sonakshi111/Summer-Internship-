@@ -2,7 +2,10 @@ import { getStudentInfoRows, sheets, sheetId, mapRowsToObjects } from '../Models
 
 export async function getStudentInfo(req, res) {
   try {
-    const { uid } = req.params;
+    let { uid } = req.params;
+    
+    // Decode the UID to handle special characters
+    uid = decodeURIComponent(uid);
     console.log(`Received request to /api/student/info/${uid}`);
     
     // Get all rows from RegistrationDetails including headers
@@ -27,16 +30,14 @@ export async function getStudentInfo(req, res) {
       return res.status(404).json({ success: false, message: 'Student not found' });
     }
     
-    // Return only the available fields from RegistrationDetails
-    const { UID, name, email, course } = studentInfo;
-    
+    // Return the student information
     res.json({
       success: true,
       studentInfo: {
-        UID,
-        name,
-        email,
-        course
+        UID: studentInfo.UID,
+        name: studentInfo.name,
+        email: studentInfo.email,
+        course: studentInfo.course
       }
     });
   } catch (error) {
